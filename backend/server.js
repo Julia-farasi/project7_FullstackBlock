@@ -66,7 +66,33 @@ app.get("/posts/:Id", async (req, res) => {
   }
 });
 ////PUT Methode from Table Posts //noch in Arbeit
-
+app.put("/posts/:Id", async (req, res) => {
+  const { Id } = req.params;
+  const { author, title, content, cover, date } = req.body;
+  console.log(req.body);
+  if (!author) return res.status(400).json({ message: "Author required" });
+  try {
+    const { rows, rowCount } = await query(
+      `UPDATE posts
+      Set
+     author = COALESCE($1, author), 
+     title = COALESCE($2, title), 
+     content = COALESCE($3, content), 
+     cover = COALESCE($4, cover), 
+     date = COALESCE($5, date)
+     WHERE id = $6
+     RETURNING author, title, content, cover, date;`,
+      [author, title, content, cover, date, Id]
+    );
+    if (rowCount === 0) {
+      res.status(404).json({ message: "Post not found" });
+    }
+    res.json({ data: rows });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 ////DELETE MEthode from Table Posts
 app.delete("/posts/:Id", async (req, res) => {
   const { Id } = req.params;
