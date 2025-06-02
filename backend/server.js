@@ -21,8 +21,9 @@ app.use(express.json(), cors());
 app.get("/posts", async (req, res) => {
   try {
     const { rows } = await query(
-      "SELECT author, title, content, cover, date from posts"
+      "SELECT id, author, title, content, cover, date from posts"
     );
+    console.log({rows});
     res.json({ data: rows });
   } catch (error) {
     console.log(error);
@@ -49,25 +50,35 @@ app.post("/posts", async (req, res) => {
 });
 
 ////GET by Id Methode
-app.get("/posts/:Id", async (req, res) => {
-  const { Id } = req.params;
+app.get("/posts/:id", async (req, res) => {
+  const { id } = req.params;  // ✅ richtig klein
+  console.log("params:", req.params);  // sollte z. B. { id: '1' } ausgeben
+
   try {
-    const { rows, rowCount } = await query(
-      "SELECT author, title, content, cover, date from posts WHERE id = $1;",
-      [Id]
+    const { rows } = await query(
+      "SELECT id, author, title, content, cover, date FROM posts WHERE id = $1;",
+      [id]
     );
-    if (rowCount === 0) {
-      res.status(404).json({ message: "Product not found" });
+
+    console.log("Gefundener Post:", rows[0]);
+
+    if (!rows[0]) {
+      return res.status(404).json({ message: "Post nicht gefunden" });
     }
+
     res.json({ data: rows[0] });
   } catch (error) {
-    console.log(error);
+    console.log("Fehler im GET /posts/:id", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
+
+
 ////PUT Methode from Table Posts //noch in Arbeit
-app.put("/posts/:Id", async (req, res) => {
-  const { Id } = req.params;
+app.put("/posts/:id", async (req, res) => {
+  const { id } = req.params;
   const { author, title, content, cover, date } = req.body;
   console.log(req.body);
   if (!author) return res.status(400).json({ message: "Author required" });
@@ -82,7 +93,7 @@ app.put("/posts/:Id", async (req, res) => {
      date = COALESCE($5, date)
      WHERE id = $6
      RETURNING author, title, content, cover, date;`,
-      [author, title, content, cover, date, Id]
+      [author, title, content, cover, date, id]
     );
     if (rowCount === 0) {
       res.status(404).json({ message: "Post not found" });
@@ -94,12 +105,12 @@ app.put("/posts/:Id", async (req, res) => {
   }
 });
 ////DELETE MEthode from Table Posts
-app.delete("/posts/:Id", async (req, res) => {
-  const { Id } = req.params;
+app.delete("/posts/:id", async (req, res) => {
+  const { id } = req.params;
   try {
     const { rows, rowCount } = await query(
       "DELETE FROM posts WHERE id = $1 RETURNING *;",
-      [Id]
+      [id]
     );
     if (rowCount === 0) {
       res.status(404).json({ message: "Product not found" });
