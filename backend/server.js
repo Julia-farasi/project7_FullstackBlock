@@ -42,7 +42,7 @@ app.post("/posts", async (req, res) => {
       "INSERT INTO posts (author, title, content, cover, date)VALUES ($1,$2,$3,$4,$5) RETURNING *;",
       [author, title, content, cover, date]
     );
-    res.status(201).json({ data: rows });
+    res.status(201).json({ data: rows[0] });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server error" });
