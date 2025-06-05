@@ -23,7 +23,7 @@ app.get("/posts", async (req, res) => {
     const { rows } = await query(
       "SELECT id, author, title, content, cover, date from posts"
     );
-    console.log({rows});
+    console.log({ rows });
     res.json({ data: rows });
   } catch (error) {
     console.log(error);
@@ -51,8 +51,8 @@ app.post("/posts", async (req, res) => {
 
 ////GET by Id Methode
 app.get("/posts/:id", async (req, res) => {
-  const { id } = req.params;  // ✅ richtig klein
-  console.log("params:", req.params);  // sollte z. B. { id: '1' } ausgeben
+  const { id } = req.params; // ✅ richtig klein
+  console.log("params:", req.params); // sollte z. B. { id: '1' } ausgeben
 
   try {
     const { rows } = await query(
@@ -73,14 +73,12 @@ app.get("/posts/:id", async (req, res) => {
   }
 });
 
-
-
-
 ////PUT Methode from Table Posts //noch in Arbeit
 app.put("/posts/:id", async (req, res) => {
   const { id } = req.params;
   const { author, title, content, cover, date } = req.body;
-  console.log(req.body);
+
+  console.log("Aus der Put-Methode", req.body);
   if (!author) return res.status(400).json({ message: "Author required" });
   try {
     const { rows, rowCount } = await query(
@@ -92,7 +90,7 @@ app.put("/posts/:id", async (req, res) => {
      cover = COALESCE($4, cover), 
      date = COALESCE($5, date)
      WHERE id = $6
-     RETURNING author, title, content, cover, date;`,
+     RETURNING id, author, title, content, cover, date;`,
       [author, title, content, cover, date, id]
     );
     if (rowCount === 0) {
